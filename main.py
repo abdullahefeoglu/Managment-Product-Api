@@ -52,3 +52,16 @@ def create_product(product: Product):
     products.append(new_product)
 
     return new_product
+
+@app.put("/products/{product_id}")
+def update_product(product_id: int, updated_product: Product):
+    for product in products:
+        if product["id"] == product_id:
+            product["name"] = updated_product.name
+            product["price"] = updated_product.price
+            return product
+
+    raise HTTPException(
+        status_code=404,
+        detail="Product not found"
+    )
