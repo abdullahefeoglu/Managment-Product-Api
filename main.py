@@ -1,6 +1,14 @@
+import decimal
+
 from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 
 app = FastAPI()
+
+class Product(BaseModel):
+    name:str
+    price: float
+
 
 products = [
     {"id": 1, "name": "Keyboard", "price": 1200},
@@ -30,3 +38,17 @@ def get_product(product_id: int):
         status_code=404,
         detail="Product not found"
     )
+
+@app.post("/products", status_code=201)
+def create_product(product: Product):
+    new_id = max(p["id"] for p in products) + 1
+
+    new_product = {
+        "id" : new_id,
+        "name" : product.name,
+        "price" : product.price
+    }
+
+    products.append(new_product)
+
+    return new_product
