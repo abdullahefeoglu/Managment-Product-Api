@@ -3,8 +3,32 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from database import create_table
 from  database import get_products, add_product,get_product as db_get_product,update_product,delete_product
+from fastapi.responses import FileResponse
+from pathlib import Path
 
 app = FastAPI()
+
+BASE_DIR = Path(__file__).resolve().parent
+
+@app.get("/admin/add_product", include_in_schema=False)
+def add_product_page():
+    return FileResponse(BASE_DIR / "admin" / "add_product.html")
+
+
+@app.get("/admin/delete_product", include_in_schema=False)
+def delete_product_page():
+    return FileResponse(BASE_DIR / "admin" / "delete_product.html")
+
+
+@app.get("/admin/update_product", include_in_schema=False)
+def update_product_page():
+    return FileResponse(BASE_DIR / "admin" / "update_product.html")
+
+
+@app.get("/user/list_product", include_in_schema=False)
+def list_product_page():
+    return FileResponse(BASE_DIR / "user" / "list_product.html")
+
 create_table()
 
 class Product(BaseModel):
