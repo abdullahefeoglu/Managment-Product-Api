@@ -1,9 +1,11 @@
 import decimal
-
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from database import create_table
+
 
 app = FastAPI()
+create_table()
 
 class Product(BaseModel):
     name:str
