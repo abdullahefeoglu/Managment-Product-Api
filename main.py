@@ -2,7 +2,7 @@ import decimal
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from database import create_table
-
+from  database import get_products, add_product,get_product as db_get_product,update_product,delete_product
 
 app = FastAPI()
 create_table()
@@ -26,60 +26,46 @@ def home():
     return {"message" : "Product Management API is running"}
 
 @app.get("/products")
-def get_products():
-    return products
+def read_products():
+    return get_products()
 
 @app.get("/products/{product_id}")
 def get_product(product_id: int):
-    for product in products:
-        if product["id"] == product_id:
-            return product
+    product = db_get_product(product_id)
 
+    if product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
 
-    raise HTTPException(
-        status_code=404,
-        detail="Product not found"
-    )
+    return product
 
 @app.post("/products", status_code=201)
 def create_product(product: Product):
-    new_id = max(p["id"] for p in products) + 1
+    add_product(product.name, product.price)
 
-    new_product = {
-        "id" : new_id,
+    return {
+        "message" : "Product created successfully",
         "name" : product.name,
         "price" : product.price
     }
 
-    products.append(new_product)
-
-    return new_product
 
 @app.put("/products/{product_id}")
-def update_product(product_id: int, updated_product: Product):
-    for product in products:
-        if product["id"] == product_id:
-            product["name"] = updated_product.name
-            product["price"] = updated_product.price
-            return product
-
-    raise HTTPException(
-        status_code=404,
-        detail="Product not found"
+def edit_product(product_id: int, updated_product: Product):
+    updated = update_product(
+        product_id,
+        updated_product.name,
+        updated_product.price
     )
+    if not updated:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    return db_get_product(product_id)
 
 
 @app.delete("/products/{product_id}")
-def delete_product(product_id: int):
-    for index, product in enumerate(products):
-        if product["id"] == product_id:
-            deleted_product = products.pop(index)
-            return {
-                "message": "Product deleted successfully",
-                "product": deleted_product
-            }
+def remove_product(product_id: int):
+    deleted = delete_product(product_id)
 
-    raise HTTPException(
-        status_code=404,
-        detail="Product not found"
-    )
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Product not found")
+
